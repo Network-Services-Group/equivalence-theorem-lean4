@@ -92,6 +92,9 @@ If you use this formalization, please cite the paper:
   title={The Equivalence Theorem: First-Class Relationships for Structurally Complete Database Systems},
   author={Alford, Matthew},
   year={2026},
+  eprint={2603.13603},
+  archivePrefix={arXiv},
+  primaryClass={cs.DB},
   note={ORCID: 0009-0007-3856-8362}
 }
 ```
