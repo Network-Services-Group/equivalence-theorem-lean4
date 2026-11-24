@@ -1,100 +1,85 @@
-# Equivalence Theorem — Lean 4 Formalization
+# First-Class Relationships as a Representation Threshold: Lean 4 development
 
-Machine-checked formalization of **The Equivalence Theorem** from:
+Lean 4 code accompanying version 2 of arXiv:2603.13603:
 
-> *The Equivalence Theorem: First-Class Relationships for Structurally Complete Database Systems*
-> Matthew Alford — [ORCID](https://orcid.org/0009-0007-3856-8362)
-> Network Service Group, 2026
+> *First-Class Relationships as a Representation Threshold: Identity, Time,
+> Confidence, and Causation*
+> Matthew Alford ([ORCID](https://orcid.org/0009-0007-3856-8362)), 2026
 
-## What's Formalized
+Version 1 of the paper, *The Equivalence Theorem: First-Class Relationships
+for Structurally Complete Database Systems*, claimed that four requirements
+were mutually equivalent. That claim is withdrawn. The formalization that
+accompanied version 1 is kept at the tag [`v1`](../../tree/v1); it is not
+maintained and its statements should not be cited as results.
 
-This Lean 4 project formalizes the core mathematical content of the paper:
+## What is proved
 
-| Paper Section | Lean 4 |
+The development covers weakened forms of parts (b) and (c) of the paper's
+Theorem 2. It models a representation with one relationship construct whose
+participant slots may or may not hold relationships.
+
+| Paper | Lean (`FirstClass/Threshold.lean`) |
 |---|---|
-| Definition 5 (First-Class Object) | `FirstClassOps` structure |
-| Definition 3 (P1: N-ary + Attributes) | `SatisfiesP1` structure |
-| Definition 4 (P2: Temporal Validity) | `SatisfiesP2` structure |
-| Definition 5 (P3: Uncertainty Quantification) | `SatisfiesP3` structure |
-| Definition 6 (P4: Causal Relationships) | `SatisfiesP4` structure |
-| Lemma 1 (Binary Decomposition Failure) | `binary_decomposition_failure` |
-| Lemma 1 (FC ⇒ P1 ∧ P2 ∧ P3 ∧ P4) | `fc_implies_p1`, `fc_implies_p2`, `fc_implies_p3`, `fc_implies_p4` |
-| Lemma 2 (P1 ⇒ FC) | `p1_implies_fc` |
-| Lemma 3 (P2 ⇒ FC) | `p2_implies_fc` |
-| Lemma 4 (P3 ⇒ FC) | `p3_implies_fc` |
-| Lemma 5 (P4 ⇒ FC) | `p4_implies_fc` |
-| **Theorem 1 (Equivalence Theorem)** | `equivalenceTheorem` |
-| Corollary (All or Nothing) | `all_or_nothing` |
-| Theorem 2 (Frame Problem Resolution) | `frame_problem_resolved`, `frame_persistence_chain` |
-| Expressiveness Hierarchy | `hierarchy_strict` |
-| Uncertainty Propagation | `chainConfidence`, `noisyOr` |
+| COMPOSE: every relationship can occupy a participant slot and be read back | `Compose` |
+| First-class relationships, in this model: COMPOSE plus a relationship builder | `FC` |
+| P3, evidential-basis clause (one assessment per relationship) | `P3` |
+| P4, causal links between relationships (no roles or attributes) | `P4` |
+| Theorem 2 (b): P3 implies COMPOSE; P4 implies COMPOSE | `p3_compose`, `p4_compose` |
+| Theorem 2 (c): COMPOSE with a builder represents P3 and P4 | `fc_to_p3`, `fc_to_p4` |
+| Given a builder, P3 (or P4) holds exactly when FC does | `p3_iff_fc`, `p4_iff_fc` |
+| A construct of n-ary rows in which no slot denotes a row has a builder but no COMPOSE, hence no P4 | `relational_not_compose`, `relational_not_p4` |
+| Counting fact behind Lemma 1: a binary edge among three distinct participants omits one | `binary_decomposition_failure` |
 
-## Proof Status
+## What is not proved
 
-All theorems type-check with **zero errors and zero `sorry`s**. `lake build` should complete with no warnings.
+Read these limits before relying on the code.
 
-## Prerequisites
+- `p3_compose` and `p4_compose` follow directly from the definitions of `P3`
+  and `P4`; the paper says so in its remark on scope.
+- `P3` has one assessment per relationship and does not model the source,
+  method or assessed value. `P4` has no roles or attributes.
+- `FC` here is COMPOSE together with a builder, and the builder does not
+  store attributes. STORE, RETRIEVE, QUERY, ATTACH, arity, confidence values
+  and valid time are not modelled, so Theorem 2 (a) and Lemma 1 are argued
+  in the paper only.
+- The `relational` construct has no row-denoting slot by construction. It
+  does not model SQL, where a key can denote a row.
+- Corollary 3 (what must be built) is not formalized.
+- `binary_decomposition_failure` is a standalone fact; it is not connected
+  to `System`.
 
-Install Lean 4 via [elan](https://github.com/leanprover/elan):
+## Build
 
-```bash
-# Linux / macOS / WSL
-curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh
-
-# Windows (PowerShell)
-Invoke-WebRequest -Uri https://raw.githubusercontent.com/leanprover/elan/master/elan-init.ps1 -OutFile elan-init.ps1
-powershell -ExecutionPolicy Bypass -File elan-init.ps1
-```
-
-## Build & Type-Check
+Install Lean 4 with [elan](https://github.com/leanprover/elan), then:
 
 ```bash
-cd equivalence-lean4
 lake build
 ```
 
-If this is your first build, Lake will download the Lean toolchain (specified in `lean-toolchain`) automatically. The build takes ~1 minute.
+Lake downloads the toolchain named in `lean-toolchain` (Lean 4.14.0) on the
+first build. The development uses only core Lean, has no `sorry`, and its
+theorems depend only on Lean's standard axioms (`propext`,
+`Classical.choice`, `Quot.sound`; check with `#print axioms`).
 
-A successful build with no errors means **every theorem and definition type-checks** — the proofs are machine-verified.
-
-## Project Structure
+## Layout
 
 ```
-equivalence-lean4/
-├── lakefile.lean                    # Lake build configuration
-├── lean-toolchain                   # Lean version (v4.14.0)
-├── EquivalenceTheorem.lean          # Root import
-├── EquivalenceTheorem/
-│   └── Basic.lean                   # All definitions and proofs
-└── README.md                        # This file
+lakefile.lean             Lake build configuration
+lean-toolchain            Lean version
+FirstClass.lean           Root import
+FirstClass/Threshold.lean All definitions and proofs
 ```
-
-## How to Read the Code
-
-If you're new to Lean 4, here's a quick guide:
-
-- **`structure`** defines a record type (like a struct with fields)
-- **`theorem`** states a proposition and provides its proof
-- **`def`** defines a computable function or construction
-- **`:=`** introduces the proof or definition body
-- **`by`** enters tactic mode (step-by-step proof construction)
-- **`sorry`** marks an incomplete proof (the type-checker accepts it but flags it)
-- **`#eval`** runs a computation at compile time (used for sanity checks)
-
-The formalization follows the paper section by section. Each Lean definition has a docstring (`/-- ... -/`) explaining the correspondence to the paper.
 
 ## Citation
 
-If you use this formalization, please cite the paper:
-
 ```bibtex
-@article{alford2026equivalence,
-  title={The Equivalence Theorem: First-Class Relationships for Structurally Complete Database Systems},
+@article{alford2026threshold,
+  title={First-Class Relationships as a Representation Threshold: Identity, Time, Confidence, and Causation},
   author={Alford, Matthew},
   year={2026},
   eprint={2603.13603},
   archivePrefix={arXiv},
   primaryClass={cs.DB},
-  note={ORCID: 0009-0007-3856-8362}
+  note={Version 2. ORCID: 0009-0007-3856-8362}
 }
 ```

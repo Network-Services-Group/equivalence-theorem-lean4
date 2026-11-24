@@ -1,10 +1,10 @@
 import Lake
 open Lake DSL
 
-package equivalenceTheorem where
+package firstClass where
   leanOptions := #[
     ⟨`autoImplicit, false⟩
   ]
 
 @[default_target]
-lean_lib EquivalenceTheorem where
+lean_lib FirstClass where
